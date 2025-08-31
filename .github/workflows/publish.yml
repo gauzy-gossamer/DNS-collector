@@ -8,32 +8,28 @@ permissions:
   contents: read
 
 jobs:
-
   dockerhub:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: docker/setup-qemu-action@v3
     - uses: docker/setup-buildx-action@v3
-
-    - name: Build the Docker image
-      run: |
-        docker buildx build \
-          --build-arg VERSION=${{ github.event.release.tag_name }} \
-          --platform linux/amd64,linux/arm64,linux/i386 \
-          --file Dockerfile -t dnscollector .
-
-    - name: Tag image
-      run: |
-        docker tag dnscollector dmachard/dnscollector:${{ github.event.release.tag_name }}
-        docker tag dnscollector dmachard/dnscollector:latest
-        docker tag dnscollector dmachard/go-dnscollector:${{ github.event.release.tag_name }}
-        docker tag dnscollector dmachard/go-dnscollector:latest
-
-    - name: Upload to DockerHub
-      run: |
-        echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_LOGIN }}" --password-stdin
-        docker push dmachard/dnscollector:latest
-        docker push dmachard/dnscollector:${{ github.event.release.tag_name }}
-        docker push dmachard/go-dnscollector:latest
-        docker push dmachard/go-dnscollector:${{ github.event.release.tag_name }}
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_LOGIN }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64,linux/386
+        push: true
+        build-args: |
+          VERSION=${{ github.event.release.tag_name }}
+        tags: |
+          dmachard/dnscollector:${{ github.event.release.tag_name }}
+          dmachard/dnscollector:latest
+          dmachard/go-dnscollector:${{ github.event.release.tag_name }}
+          dmachard/go-dnscollector:latest
