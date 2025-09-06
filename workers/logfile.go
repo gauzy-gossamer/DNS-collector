@@ -378,10 +378,11 @@ func (w *LogFile) WriteToPcap(dm dnsutils.DNSMessage, pkt []gopacket.Serializabl
 		layer.SerializeTo(buf, opts)
 	}
 
-	// rotate pcap file ?
 	bufSize := len(buf.Bytes())
 
-	if (w.fileSize + int64(bufSize)) > w.GetMaxSize() {
+	// rotate pcap file ?
+	// skip rotation on size if we have interval set up
+	if w.GetConfig().Loggers.LogFile.RotationInterval != 0 && (w.fileSize+int64(bufSize)) > w.GetMaxSize() {
 		if err := w.RotateFile(); err != nil {
 			w.LogError("failed to rotate file: %s", err)
 			return
@@ -404,7 +405,8 @@ func (w *LogFile) WriteToPlain(data []byte) {
 	dataSize := int64(len(data))
 
 	// rotate file ?
-	if (w.fileSize + dataSize) > w.GetMaxSize() {
+	// skip rotation on size if we have interval set up
+	if w.GetConfig().Loggers.LogFile.RotationInterval != 0 && (w.fileSize+dataSize) > w.GetMaxSize() {
 		if err := w.RotateFile(); err != nil {
 			w.LogError("failed to rotate file: %s", err)
 			return
@@ -422,7 +424,8 @@ func (w *LogFile) WriteToDnstap(data []byte) {
 	dataSize := int64(len(data))
 
 	// rotate file ?
-	if (w.fileSize + dataSize) > w.GetMaxSize() {
+	// skip rotation on size if we have interval set up
+	if w.GetConfig().Loggers.LogFile.RotationInterval != 0 && (w.fileSize+dataSize) > w.GetMaxSize() {
 		if err := w.RotateFile(); err != nil {
 			w.LogError("failed to rotate file: %s", err)
 			return
@@ -555,6 +558,12 @@ func (w *LogFile) StartLogging() {
 	maxBatchSize := w.config.Loggers.LogFile.MaxBatchSize
 	accumulatedBatchSize := 0 // Current batch size
 
+	rotationInterval := time.Duration(w.GetConfig().Loggers.LogFile.RotationInterval) * time.Second
+	rotationTimer := time.NewTimer(rotationInterval)
+	if rotationInterval <= 0 {
+		rotationTimer.Stop()
+	}
+
 	for {
 		select {
 		case <-w.OnLoggerStopped():
@@ -562,8 +571,9 @@ func (w *LogFile) StartLogging() {
 			close(w.compressQueue)
 			close(w.commandQueue)
 
-			// stop timer
+			// stop timers
 			flushTimer.Stop()
+			rotationTimer.Stop()
 
 			// Force write remaining batch data
 			if accumulatedBatchSize > 0 {
@@ -670,6 +680,11 @@ func (w *LogFile) StartLogging() {
 			buffer.Reset()
 			flushTimer.Reset(flushInterval)
 
+		case <-rotationTimer.C:
+			if err := w.RotateFile(); err != nil {
+				w.LogError("failed to rotate file: %s", err)
+			}
+			rotationTimer.Reset(rotationInterval)
 		}
 	}
 }

@@ -75,6 +75,7 @@ type ConfigLoggers struct {
 		MaxSize              int    `yaml:"max-size" default:"100"`
 		MaxFiles             int    `yaml:"max-files" default:"10"`
 		MaxBatchSize         int    `yaml:"max-batch-size" default:"65536"`
+		RotationInterval     int    `yaml:"rotation-interval" default:"0"`
 		FlushInterval        int    `yaml:"flush-interval" default:"1"`
 		Compress             bool   `yaml:"compress" default:"false"`
 		Mode                 string `yaml:"mode" default:"text"`

@@ -35,6 +35,10 @@ The File Logger allows you to log DNS traffic to a file in various formats, with
 * `max-batch-size` (integer)
   > Buffers data up to the specified size (in bytes) before writing to the file.
 
+* `rotation-interval`: (integer)
+  > rotate files after specified number of seconds.
+  > Mutually exclusive with max-size.
+
 * `flush-interval` (integer)
   > flush buffer to log file every X seconds
 
