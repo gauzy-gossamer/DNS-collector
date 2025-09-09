@@ -19,6 +19,7 @@ require (
 	github.com/farsightsec/golang-framestream v0.3.0
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gauzy-gossamer/netaddr v0.0.0-20250909121527-3cdd592e8e7d
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/snappy v1.0.0
 	github.com/google/gopacket v1.1.19
@@ -189,7 +190,6 @@ require (
 	google.golang.org/grpc v1.72.2 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
 )
 
 // Pin grpc to previous version: using newer version breaks kuberesolver, but updating kuberesolver needs to be done in weaveworks/common.

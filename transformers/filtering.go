@@ -10,7 +10,7 @@ import (
 	"github.com/dmachard/go-dnscollector/dnsutils"
 	"github.com/dmachard/go-dnscollector/pkgconfig"
 	"github.com/dmachard/go-logger"
-	"inet.af/netaddr"
+	"github.com/gauzy-gossamer/netaddr"
 )
 
 type FilteringTransform struct {
